@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discussion App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      margin: 0;
+    }
+    .left-pane, .right-pane {
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .left-pane {
+      width: 35%;
+      border-right: 2px solid #ddd;
+      background: #f9f9f9;
+    }
+    .right-pane {
+      width: 65%;
+    }
+    .question-box {
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .question-box:hover {
+      background: #eef;
+    }
+    .response {
+      border: 1px solid #ddd;
+      padding: 8px;
+      margin-top: 8px;
+      background: #f7f7f7;
+    }
+    button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Left Pane -->
+  <div class="left-pane">
+    <h2>Questions</h2>
+    <div id="questions-list"></div>
+  </div>
+
+  <!-- Right Pane -->
+  <div class="right-pane">
+    <div id="question-form">
+      <h2>Ask a Question</h2>
+      <input type="text" id="title" placeholder="Enter title" required><br><br>
+      <textarea id="question" placeholder="Enter your question" required></textarea><br><br>
+      <button onclick="addQuestion()">Submit Question</button>
+    </div>
+
+    <div id="question-detail" style="display:none;">
+      <h2 id="q-title"></h2>
+      <p id="q-body"></p>
+      <button onclick="resolveQuestion()">Resolve</button>
+
+      <h3>Responses</h3>
+      <div id="responses"></div>
+
+      <h3>Add a Response</h3>
+      <input type="text" id="responder-name" placeholder="Your name" required><br><br>
+      <textarea id="responder-comment" placeholder="Your comment" required></textarea><br><br>
+      <button onclick="addResponse()">Submit Response</button>
+    </div>
+  </div>
+
+  <script>
+    let questions = [];
+    let currentQuestionIndex = null;
+
+    // Add new question
+    function addQuestion() {
+      const title = document.getElementById("title").value.trim();
+      const question = document.getElementById("question").value.trim();
+      if (!title || !question) {
+        alert("Both title and question are required!");
+        return;
+      }
+      questions.push({ title, question, responses: [], resolved: false });
+      document.getElementById("title").value = "";
+      document.getElementById("question").value = "";
+      renderQuestions();
+    }
+
+    // Show question details
+    function showQuestion(index) {
+      currentQuestionIndex = index;
+      const q = questions[index];
+      document.getElementById("question-form").style.display = "none";
+      document.getElementById("question-detail").style.display = "block";
+      document.getElementById("q-title").innerText = q.title;
+      document.getElementById("q-body").innerText = q.question;
+      renderResponses();
+    }
+
+    // Add response
+    function addResponse() {
+      const name = document.getElementById("responder-name").value.trim();
+      const comment = document.getElementById("responder-comment").value.trim();
+      if (!name || !comment) {
+        alert("Both fields are required!");
+        return;
+      }
+      questions[currentQuestionIndex].responses.push({ name, comment });
+      document.getElementById("responder-name").value = "";
+      document.getElementById("responder-comment").value = "";
+      renderResponses();
+    }
+
+    // Render responses
+    function renderResponses() {
+      const container = document.getElementById("responses");
+      container.innerHTML = "";
+      questions[currentQuestionIndex].responses.forEach(res => {
+        const div = document.createElement("div");
+        div.className = "response";
+        div.innerHTML = `<strong>${res.name}</strong>: ${res.comment}`;
+        container.appendChild(div);
+      });
+    }
+
+    // Resolve question
+    function resolveQuestion() {
+      questions[currentQuestionIndex].resolved = true;
+      questions.splice(currentQuestionIndex, 1);
+      document.getElementById("question-detail").style.display = "none";
+      document.getElementById("question-form").style.display = "block";
+      renderQuestions();
+    }
+
+    // Render all questions in left pane
+    function renderQuestions() {
+      const container = document.getElementById("questions-list");
+      container.innerHTML = "";
+      questions.forEach((q, index) => {
+        const div = document.createElement("div");
+        div.className = "question-box";
+        div.innerText = q.title;
+        div.onclick = () => showQuestion(index);
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
